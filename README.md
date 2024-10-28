@@ -1,4 +1,4 @@
-# iutnc_2024_deffy
+# iutnc_2024_deefy
 
 ---
 
