@@ -7,8 +7,7 @@ CREATE TABLE users
     user_id       INT AUTO_INCREMENT PRIMARY KEY,
     user_email    VARCHAR(255) NOT NULL UNIQUE,
     user_password VARCHAR(255) NOT NULL,
-    permission_id INT,
-    FOREIGN KEY (permission_id) REFERENCES permissions (permission_id)
+    permission_id INT
 );
 
 CREATE TABLE playlists
@@ -21,9 +20,7 @@ CREATE TABLE user_playlists
 (
     user_id     INT,
     playlist_id INT,
-    PRIMARY KEY (user_id, playlist_id),
-    FOREIGN KEY (user_id) REFERENCES users (user_id),
-    FOREIGN KEY (playlist_id) REFERENCES playlists (playlist_id)
+    PRIMARY KEY (user_id, playlist_id)
 );
 
 CREATE TABLE podcast_tracks
@@ -53,9 +50,7 @@ CREATE TABLE playlist_tracks
 (
     playlist_id INT,
     track_id    INT,
-    PRIMARY KEY (playlist_id, track_id),
-    FOREIGN KEY (playlist_id) REFERENCES playlists (playlist_id),
-    FOREIGN KEY (track_id) REFERENCES podcast_tracks (track_id)
+    PRIMARY KEY (playlist_id, track_id)
 );
 
 CREATE TABLE permissions
@@ -64,3 +59,14 @@ CREATE TABLE permissions
     role_name     VARCHAR(255) NOT NULL UNIQUE,
     role_level    INT          NOT NULL
 );
+
+ALTER TABLE users
+ADD FOREIGN KEY (permission_id) REFERENCES permissions (permission_id);
+
+ALTER TABLE user_playlists
+ADD FOREIGN KEY (user_id) REFERENCES users (user_id),
+ADD FOREIGN KEY (playlist_id) REFERENCES playlists (playlist_id);
+
+ALTER TABLE playlist_tracks
+ADD FOREIGN KEY (playlist_id) REFERENCES playlists (playlist_id),
+ADD FOREIGN KEY (track_id) REFERENCES podcast_tracks (track_id);
