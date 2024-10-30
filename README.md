@@ -4,5 +4,5 @@
 
 Membres de l'équipe de développement du projet :
 
-- Franoux Noé
+- FRANOUX Noé
 - OUDER Nathan
