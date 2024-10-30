@@ -6,6 +6,8 @@ use iutnc\deefy\action\DefaultAction;
 use iutnc\deefy\action\DisplayPlaylistAction;
 use iutnc\deefy\action\AddPlaylistAction;
 use iutnc\deefy\action\AddPodcastTrackAction;
+use iutnc\deefy\action\RegisterAction;
+use iutnc\deefy\action\SignInAction;
 
 class Dispatcher {
     private ?string $action;
@@ -24,6 +26,12 @@ class Dispatcher {
                 break;
             case 'add-track':
                 $action = new AddPodcastTrackAction();
+                break;
+            case 'signin':
+                $action = new SignInAction();
+                break;
+            case 'register':
+                $action = new RegisterAction();
                 break;
             case 'default':
             default:

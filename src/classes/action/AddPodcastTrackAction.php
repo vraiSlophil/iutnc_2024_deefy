@@ -44,7 +44,7 @@ class AddPodcastTrackAction extends Action
                 throw new DataInsertException('Playlist not found');
             }
             return $this->renderForm();
-        } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
             $this->handleFormSubmission();

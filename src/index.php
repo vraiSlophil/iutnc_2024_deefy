@@ -1,13 +1,28 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+
 
 session_start();
 
 require_once '../vendor/autoload.php';
+(Dotenv\Dotenv::createImmutable(__DIR__ . '/../'))->load();
+
+if (isset($_ENV) && $_ENV['APP_DEBUG'] === 'true') {
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+}
 
 use iutnc\deefy\dispatch\Dispatcher;
+
+$user = null;
+
+if (isset($_SESSION['user'])) {
+    try {
+        $user = unserialize($_SESSION['user']);
+    } catch (Exception $e) {}
+}
+
+
 
 
 ?>
@@ -26,14 +41,32 @@ use iutnc\deefy\dispatch\Dispatcher;
     <h1>
         Iutnc - Deefy
     </h1>
-</nav>
-<main>
-    <form method="get" action="" class="form-index">
+    <form method="get" action="">
         <button type="submit" name="action" value="default">Default Action</button>
         <button type="submit" name="action" value="playlist">Display Playlist Action</button>
         <button type="submit" name="action" value="add-playlist">Add Playlist Action</button>
-<!--        <button type="submit" name="action" value="add-track">Add Podcast Track Action</button>-->
+        <!--        <button type="submit" name="action" value="add-track">Add Podcast Track Action</button>-->
     </form>
+    <form method="get" action="">
+
+        <?php
+        if ($user !== null) {
+            echo '
+                <p>
+                    Connecté en tant que ' . $user->getUserName() . '
+                </p>
+                <button type="submit" name="action" value="signout">Sign Out</button>';
+
+        } else {
+            echo '
+                <button type="submit" name="action" value="signin">Sign In</button>
+                <button type="submit" name="action" value="register">Register</button>';
+        }
+        ?>
+    </form>
+
+</nav>
+<main>
     <?php
     try {
         $dispatcher = new Dispatcher();

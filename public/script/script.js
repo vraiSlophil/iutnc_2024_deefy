@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
         errorDiv.classList.add('show');
         setTimeout(() => {
             errorDiv.classList.add('hide');
+            // errorDiv.classList.remove('show');
         }, 3000);
     }
 });

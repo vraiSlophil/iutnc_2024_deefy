@@ -5,9 +5,10 @@ USE deefy;
 CREATE TABLE users
 (
     user_id       INT AUTO_INCREMENT PRIMARY KEY,
+    user_name     VARCHAR(255) NOT NULL UNIQUE,
     user_email    VARCHAR(255) NOT NULL UNIQUE,
     user_password VARCHAR(255) NOT NULL,
-    permission_id INT
+    permission_id INT DEFAULT 1 NOT NULL
 );
 
 CREATE TABLE playlists
@@ -60,6 +61,14 @@ CREATE TABLE permissions
     role_level    INT          NOT NULL
 );
 
+CREATE TABLE tokens
+(
+    token_id    INT AUTO_INCREMENT PRIMARY KEY,
+    user_id     INT,
+    token       VARCHAR(255) NOT NULL,
+    expires_at  DATETIME NOT NULL
+);
+
 ALTER TABLE users
 ADD FOREIGN KEY (permission_id) REFERENCES permissions (permission_id);
 
@@ -70,3 +79,6 @@ ADD FOREIGN KEY (playlist_id) REFERENCES playlists (playlist_id);
 ALTER TABLE playlist_tracks
 ADD FOREIGN KEY (playlist_id) REFERENCES playlists (playlist_id),
 ADD FOREIGN KEY (track_id) REFERENCES podcast_tracks (track_id);
+
+ALTER TABLE tokens
+ADD FOREIGN KEY (user_id) REFERENCES users (user_id);

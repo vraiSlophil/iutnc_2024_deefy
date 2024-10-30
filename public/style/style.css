@@ -52,45 +52,49 @@ textarea {
 /* Style de base pour la div.error */
 div.error {
     position: fixed;
-    top: -100px; /* Commence hors de l'écran */
+    top: -5em; /* Commence hors de l'écran */
     left: 50%;
     transform: translateX(-50%);
     background-color: #f8d7da;
     color: #721c24;
-    padding: 20px;
+    padding: 1em;
     border: 1px solid #f5c6cb;
-    border-radius: 5px;
+    border-radius: 1em;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     opacity: 0;
-    transition: opacity 0.5s ease-in-out;
+    transition: top 0.5s ease-in-out, opacity 0.5s linear;
+    cursor: pointer;
 }
 
 /* Animation pour faire descendre la div.error */
 div.error.show {
-    top: 20px; /* Position finale */
+    top: 1em; /* Position finale */
     opacity: 1;
-    transition: top 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    transition: top 0.5s ease-in-out, opacity 0.5s linear;
 }
 
 /* Animation pour faire disparaître la div.error */
 div.error.hide {
+    top: -5em;
     opacity: 0;
-    transition: opacity 0.5s ease-in-out;
+    transition: top 0.5s ease-in-out, opacity 0.5s linear;
 }
 
 /* navbar style */
 
 nav {
-    /*color: white;*/
+    width: 100%;
     padding: 1em 5em;
     min-height: 5em;
     display: flex;
-    justify-content: start;
+    justify-content: space-between;
     align-items: center;
+    gap: 1em;
     background-color: #e8e8e8;
     box-shadow: 0 0 1em rgba(0, 0, 0, 0.2);
 }
+
 
 /* main style */
 main {
@@ -100,22 +104,20 @@ main {
     min-height: 100%;
 }
 
-form {
+.form-action,
+.form-index{
     display: flex;
     gap: 1em;
     padding: 2em;
+    width: 100%;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
 }
 
 .form-index {
     flex-direction: row;
     justify-content: space-evenly;
-    align-items: center;
-}
-
-.form-action {
-    width: 100%;
-    flex-direction: column;
-    justify-content: start;
     align-items: center;
 }
 
