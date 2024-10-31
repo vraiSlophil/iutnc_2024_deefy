@@ -3,11 +3,13 @@
 namespace iutnc\deefy\action;
 
 use iutnc\deefy\auth\Authn;
-use iutnc\deefy\database\DeefyRepository;
 use iutnc\deefy\exception\AuthException;
 
 class RegisterAction extends Action
 {
+    /**
+     * @throws AuthException
+     */
     public function execute(): string
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -57,6 +59,11 @@ class RegisterAction extends Action
             throw new AuthException('Tous les champs sont obligatoires');
         }
 
+//        vérifier si l'email est valide
+        if (!filter_var($_POST['user_email'], FILTER_VALIDATE_EMAIL)) {
+            throw new AuthException('Email invalide');
+        }
+
         $user_name = filter_input(INPUT_POST, 'user_name', FILTER_SANITIZE_SPECIAL_CHARS);
         $user_email = filter_input(INPUT_POST, 'user_email', FILTER_SANITIZE_SPECIAL_CHARS);
 
@@ -69,10 +76,10 @@ class RegisterAction extends Action
             throw new AuthException('Les mots de passe ne correspondent pas');
         }
 
-        $regex = "/^(?=(.*[a-z]){3,})(?=(.*[A-Z]){2,})(?=(.*[0-9]){2,})(?=(.*[!@#$%^&*()\-__+.])+).{8,}$/";
+        $regex = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-__+.\/'\",]).{8,}$/";
 
         if (!preg_match($regex, $user_password)) {
-            throw new AuthException('Le mot de passe doit contenir au moins 6 caractères dont : 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial');
+            throw new AuthException('Le mot de passe doit contenir au moins 8 caractères dont : 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial');
         }
 
         $user_password = password_hash($user_password, PASSWORD_DEFAULT);
@@ -81,16 +88,8 @@ class RegisterAction extends Action
         $authn->registerUser($user_name, $user_email, $user_password);
 
 
-
-
-
-
-
-
-
-
-
-
-        return '';
+        // Redirection vers l'action par défaut
+        header('Location: ?action=default');
+        exit();
     }
 }

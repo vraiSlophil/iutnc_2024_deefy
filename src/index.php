@@ -1,12 +1,12 @@
 <?php
-
-
 session_start();
 
 require_once '../vendor/autoload.php';
 (Dotenv\Dotenv::createImmutable(__DIR__ . '/../'))->load();
 
-if (isset($_ENV) && $_ENV['APP_DEBUG'] === 'true') {
+$_SESSION['debug'] = (isset($_ENV) && $_ENV['APP_DEBUG'] === 'true') ?? false;
+
+if ($_SESSION['debug']) {
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL);
@@ -21,10 +21,6 @@ if (isset($_SESSION['user'])) {
         $user = unserialize($_SESSION['user']);
     } catch (Exception $e) {}
 }
-
-
-
-
 ?>
 <!doctype html>
 <html lang="fr">
@@ -53,14 +49,14 @@ if (isset($_SESSION['user'])) {
         if ($user !== null) {
             echo '
                 <p>
-                    Connecté en tant que ' . $user->getUserName() . '
+                    Connecté en tant que <b>' . $user->getUserName() . '</b>
                 </p>
-                <button type="submit" name="action" value="signout">Sign Out</button>';
+                <button type="submit" name="action" value="logout">Déconnexion</button>';
 
         } else {
             echo '
-                <button type="submit" name="action" value="signin">Sign In</button>
-                <button type="submit" name="action" value="register">Register</button>';
+                <button type="submit" name="action" value="login">Connexion</button>
+                <button type="submit" name="action" value="register">Enregistrement</button>';
         }
         ?>
     </form>

@@ -64,8 +64,9 @@ CREATE TABLE permissions
 CREATE TABLE tokens
 (
     token_id    INT AUTO_INCREMENT PRIMARY KEY,
-    user_id     INT,
+    user_id     INT UNIQUE NOT NULL,
     token       VARCHAR(255) NOT NULL,
+    created_at  DATETIME NOT NULL default CURRENT_TIMESTAMP,
     expires_at  DATETIME NOT NULL
 );
 

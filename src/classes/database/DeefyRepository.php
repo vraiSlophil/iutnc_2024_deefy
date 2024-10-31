@@ -3,7 +3,9 @@
 namespace iutnc\deefy\database;
 
 //use AllowDynamicProperties;
+use Cassandra\Date;
 use DateTime;
+use DateTimeZone;
 use Dotenv\Dotenv;
 use Exception;
 use PDO;
@@ -46,7 +48,7 @@ class DeefyRepository
         return self::$instance;
     }
 
-    public function registerUser(string $name, string $email, string $hashed_password): bool
+    public function registerUser(string $name, string $email, string $hashed_password): int
     {
         $query = "INSERT INTO users (user_name, user_email, user_password) VALUES (:name, :email, :password)";
         $stmt = self::$database->prepare($query);
@@ -57,24 +59,34 @@ class DeefyRepository
         return self::$database->lastInsertId();
     }
 
-    public function loginUser(string $email, string $password)
+    public function loginUser(string $email, string $password): bool
     {
         $query = "SELECT user_password FROM users WHERE user_email = :email";
         $stmt = self::$database->prepare($query);
         $stmt->bindParam(':email', $email);
         $stmt->execute();
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($user) {
-            return password_verify($password, $user['password']);
+
+        if ($user && isset($user['user_password'])) {
+            return password_verify($password, $user['user_password']);
         }
         return false;
-
     }
 
+    // Ajoutez cette méthode dans la classe DeefyRepository
+
+    /**
+     * @throws RandomException
+     * @throws \DateMalformedStringException
+     */
     public function generateToken(int $user_id): string
     {
-        $token = bin2hex(random_bytes(16));
-        $expires_at = (new DateTime('+1 hour'))->format('Y-m-d H:i:s');
+        // Supprimer les tokens expirés pour cet utilisateur
+        $this->deleteExpiredTokens($user_id);
+
+        $token = bin2hex(random_bytes(32));
+        $date = new DateTime('now', new DateTimeZone('Europe/Paris'));
+        $expires_at = $date->modify('+1 hour')->format('Y-m-d H:i:s');
 
         $query = "INSERT INTO tokens (user_id, token, expires_at) VALUES (:user_id, :token, :expires_at)";
         $stmt = self::$database->prepare($query);
@@ -84,6 +96,14 @@ class DeefyRepository
         $stmt->execute();
 
         return $token;
+    }
+
+    public function deleteExpiredTokens(int $user_id): void
+    {
+        $query = "DELETE FROM tokens WHERE user_id = :user_id AND expires_at <= NOW()";
+        $stmt = self::$database->prepare($query);
+        $stmt->bindParam(':user_id', $user_id);
+        $stmt->execute();
     }
 
     public function validateToken(string $token): ?int
@@ -97,12 +117,12 @@ class DeefyRepository
         return $result ? $result['user_id'] : null;
     }
 
-    public function deleteToken(string $token): void
+    public function deleteToken(string $token): bool
     {
         $query = "DELETE FROM tokens WHERE token = :token";
         $stmt = self::$database->prepare($query);
         $stmt->bindParam(':token', $token);
-        $stmt->execute();
+        return $stmt->execute();
     }
 
     public function getUserById(int $user_id): array
@@ -111,7 +131,28 @@ class DeefyRepository
         $stmt = self::$database->prepare($query);
         $stmt->bindParam(':user_id', $user_id);
         $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user) {
+            unset($user['user_password']);
+        }
+
+        return $user;
+    }
+
+    public function getUserByEmail(string $email): array
+    {
+        $query = "SELECT * FROM users WHERE user_email = :email";
+        $stmt = self::$database->prepare($query);
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user) {
+            unset($user['user_password']);
+        }
+
+        return $user;
     }
 
 

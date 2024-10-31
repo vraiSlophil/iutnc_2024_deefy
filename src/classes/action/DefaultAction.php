@@ -8,8 +8,11 @@ class DefaultAction extends Action
     {
         $output = '<div>Welcome to Deefy!</div>';
         $output .= '<div>Use the menu to navigate.</div>';
-        if (isset($_ENV) && $_ENV['APP_DEBUG'] === 'true') {
-            $output .= isset($_SESSION['playlists']) ? var_dump($_SESSION['playlists']) : '<div>No playlists available.</div>';
+        if ($_SESSION['debug']) {
+            $output .= "<br>";
+            $output .= isset($_SESSION['playlists']) ? "<pre>" . print_r($_SESSION['playlists'], true) . "</pre>" : '<div>No playlists available.</div>';
+            $output .= "<br>";
+            $output .= isset($_SESSION['user']) ? "<pre>" . print_r(unserialize($_SESSION['user']), true) . "</pre>" : '<div>No user available.</div>';
         }
 
         return $output;

@@ -95,6 +95,14 @@ nav {
     box-shadow: 0 0 1em rgba(0, 0, 0, 0.2);
 }
 
+nav form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    gap: 1em;
+}
+
 
 /* main style */
 main {
