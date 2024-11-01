@@ -6,34 +6,36 @@ use iutnc\deefy\audio\tracks\AudioTrack;
 
 class Playlist extends AudioList {
 
-    public function ajouterPiste(AudioTrack $piste) {
-        $this->pistes[] = $piste;
-        $this->nombreDePistes++;
-        $this->dureeTotale += $piste->__get('duree');
+    public function addTrack(AudioTrack $piste): void
+    {
+        $this->track[] = $piste;
+        $this->trackNumber++;
+        $this->totalDuration += $piste->getDuration();
     }
 
-    public function supprimerPiste(int $index) {
-        if (isset($this->pistes[$index])) {
-            $this->dureeTotale -= $this->pistes[$index]->__get('duree');
-            unset($this->pistes[$index]);
-            $this->pistes = array_values($this->pistes);
-            $this->nombreDePistes--;
+    public function removeTrack(int $index): void
+    {
+        if (isset($this->track[$index])) {
+            $this->totalDuration -= $this->track[$index]->getDuration();
+            unset($this->track[$index]);
+            $this->track = array_values($this->track);
+            $this->trackNumber--;
         }
     }
 
-    public function ajouterListeDePistes(array $pistes) {
+    public function addTrackArray(array $pistes): void
+    {
         foreach ($pistes as $piste) {
-            if (!$this->contientPiste($piste)) {
-                $this->ajouterPiste($piste);
+            if (!$this->containsTrack($piste)) {
+                $this->addTrack($piste);
             }
         }
     }
 
-    private function contientPiste(AudioTrack $piste) {
-        foreach ($this->pistes as $existingPiste) {
-            if ($existingPiste == $piste) {
-                return true;
-            }
+    private function containsTrack(AudioTrack $piste): bool
+    {
+        if (in_array($piste, $this->track)) {
+            return true;
         }
         return false;
     }

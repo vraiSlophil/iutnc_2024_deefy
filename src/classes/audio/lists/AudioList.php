@@ -8,34 +8,55 @@ use iutnc\deefy\audio\tracks\AudioTrack;
 
 class AudioList implements Iterator
 {
-    protected string $nom;
-    protected int $nombreDePistes;
-    protected int $dureeTotale;
-    protected array $pistes;
+    protected string $name;
 
+    protected int $trackNumber;
+    protected int $totalDuration;
+
+    protected array $track;
     private int $position = 0;
-
     public function __construct(string $nom, array $pistes = [])
     {
-        $this->nom = $nom;
-        $this->pistes = $pistes;
-        $this->nombreDePistes = count($pistes);
-        $this->dureeTotale = array_reduce($pistes, function ($carry, AudioTrack $track) {
+        $this->name = $nom;
+        $this->track = $pistes;
+        $this->trackNumber = count($pistes);
+        $this->totalDuration = array_reduce($pistes, function ($carry, AudioTrack $track) {
             return $carry + $track->__get('duree');
         }, 0);
     }
 
-    public function __get(string $name)
+    public function getName(): string
     {
-        if (property_exists($this, $name)) {
-            return $this->$name;
-        }
-        throw new Exception("Invalid property: $name");
+        return $this->name;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTotalDuration(): int
+    {
+        return $this->totalDuration;
+    }
+
+    /**
+     * @return array
+     */
+    public function getTrack(): array
+    {
+        return $this->track;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTrackNumber(): int
+    {
+        return $this->trackNumber;
     }
 
     public function current(): mixed
     {
-        return $this->pistes[$this->position];
+        return $this->track[$this->position];
     }
 
     public function next(): void
@@ -50,7 +71,7 @@ class AudioList implements Iterator
 
     public function valid(): bool
     {
-        return isset($this->pistes[$this->position]);
+        return isset($this->track[$this->position]);
     }
 
     public function rewind(): void

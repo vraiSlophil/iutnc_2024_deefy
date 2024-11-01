@@ -20,14 +20,19 @@ class DeefyRepository
 
     private function __construct()
     {
-        $dotenv = Dotenv::createImmutable(__DIR__ . '/../../../');
-        $dotenv->load();
-
         try {
             self::$database = new PDO($_ENV['DB_CONNECTION'] . ":host=" . $_ENV['DB_HOST'] . ";dbname=" . $_ENV['DB_DATABASE'], $_ENV['DB_USERNAME'], $_ENV['DB_PASSWORD'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
         } catch (PDOException $e) {
             throw new Exception("Database connection failed: " . $e->getMessage());
         }
+    }
+
+    public static function getInstance(): ?DeefyRepository
+    {
+        if (is_null(self::$instance)) {
+            self::$instance = new DeefyRepository();
+        }
+        return self::$instance;
     }
 
     public static function testConnection(): bool
@@ -38,14 +43,6 @@ class DeefyRepository
         } catch (Exception $e) {
             return false;
         }
-    }
-
-    public static function getInstance(): ?DeefyRepository
-    {
-        if (is_null(self::$instance)) {
-            self::$instance = new DeefyRepository();
-        }
-        return self::$instance;
     }
 
     public function registerUser(string $name, string $email, string $hashed_password): int
@@ -73,12 +70,6 @@ class DeefyRepository
         return false;
     }
 
-    // Ajoutez cette méthode dans la classe DeefyRepository
-
-    /**
-     * @throws RandomException
-     * @throws \DateMalformedStringException
-     */
     public function generateToken(int $user_id): string
     {
         // Supprimer les tokens expirés pour cet utilisateur
@@ -106,15 +97,16 @@ class DeefyRepository
         $stmt->execute();
     }
 
-    public function validateToken(string $token): ?int
+    public function validateToken(int $user_id, string $token): bool
     {
-        $query = "SELECT user_id FROM tokens WHERE token = :token AND expires_at > NOW()";
+        $query = "SELECT COUNT(*) FROM tokens WHERE user_id = :user_id AND token = :token AND expires_at > NOW()";
         $stmt = self::$database->prepare($query);
+        $stmt->bindParam(':user_id', $user_id);
         $stmt->bindParam(':token', $token);
         $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $count = $stmt->fetchColumn();
 
-        return $result ? $result['user_id'] : null;
+        return $count > 0;
     }
 
     public function deleteToken(string $token): bool
@@ -127,33 +119,44 @@ class DeefyRepository
 
     public function getUserById(int $user_id): array
     {
-        $query = "SELECT * FROM users WHERE user_id = :user_id";
+        $query = "SELECT * FROM users JOIN deefy.permissions p on p.permission_id = users.permission_id WHERE user_id = :user_id";
         $stmt = self::$database->prepare($query);
         $stmt->bindParam(':user_id', $user_id);
         $stmt->execute();
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $this->returnWithoutPassword($stmt->fetch(PDO::FETCH_ASSOC));
 
-        if ($user) {
-            unset($user['user_password']);
-        }
-
-        return $user;
     }
 
     public function getUserByEmail(string $email): array
     {
-        $query = "SELECT * FROM users WHERE user_email = :email";
+        $query = "SELECT * FROM users JOIN deefy.permissions p on p.permission_id = users.permission_id WHERE user_email = :email";
         $stmt = self::$database->prepare($query);
         $stmt->bindParam(':email', $email);
         $stmt->execute();
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $this->returnWithoutPassword($stmt->fetch(PDO::FETCH_ASSOC));
 
+    }
+
+    public function getUserList(): array
+    {
+        $query = "SELECT * FROM users JOIN deefy.permissions p on p.permission_id = users.permission_id";
+        $stmt = self::$database->prepare($query);
+        $stmt->execute();
+
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($result as $key => $value) {
+            $result[$key] = $this->returnWithoutPassword($value);
+        }
+
+        return $result;
+    }
+
+    private function returnWithoutPassword(array $user): array
+    {
         if ($user) {
             unset($user['user_password']);
         }
-
         return $user;
     }
-
-
 }

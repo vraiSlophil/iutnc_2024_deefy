@@ -2,7 +2,6 @@
 
 namespace iutnc\deefy\action;
 
-use iutnc\deefy\audio\lists\Playlist;
 use iutnc\deefy\render\AudioListRenderer;
 
 class DisplayPlaylistAction extends Action
@@ -14,12 +13,20 @@ class DisplayPlaylistAction extends Action
 
     public function renderPlaylists(): string
     {
-        if (!isset($_SESSION['playlists'])) {
+        if (!isset($_SESSION['user'])) {
             return '<div>No playlists available.</div>';
         }
+
+        $user = unserialize($_SESSION['user']);
+        $playlists = $user->getPlaylists();
+
+        if (empty($playlists)) {
+            return '<div>No playlists available.</div>';
+        }
+
         $output = '<section class="playlists">';
-        foreach ($_SESSION['playlists'] as $playlist) {
-            $renderer = new AudioListRenderer(unserialize($playlist));
+        foreach ($playlists as $playlist) {
+            $renderer = new AudioListRenderer($playlist);
             $output .= $renderer->render();
         }
         $output .= '</section>';

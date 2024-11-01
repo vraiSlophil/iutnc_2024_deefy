@@ -9,15 +9,15 @@ class User
     private int $user_id;
     private string $user_name;
     private string $user_email;
-    private int $permission_id;
+    private Permission $permission;
     private array $playlists;
 
-    public function __construct(int $user_id, string $user_name, string $user_email, int $permission_id)
+    public function __construct(int $user_id, string $user_name, string $user_email, Permission $permission)
     {
         $this->user_id = $user_id;
         $this->user_name = $user_name;
         $this->user_email = $user_email;
-        $this->permission_id = $permission_id;
+        $this->permission = $permission;
         $this->playlists = [];
     }
 
@@ -26,14 +26,10 @@ class User
         $this->playlists[] = $playlist;
     }
 
-
-
-
-
-
-
-
-
+    public function getPlaylists(): array
+    {
+        return $this->playlists;
+    }
 
     public function getUserId(): int
     {
@@ -50,8 +46,13 @@ class User
         return $this->user_email;
     }
 
-    public function getPermissionId(): int
+    public function getPermission(): Permission
     {
-        return $this->permission_id;
+        return $this->permission;
+    }
+
+    public function hasAccess(int $requiredLevel): bool
+    {
+        return $this->permission->getRoleLevel() >= $requiredLevel;
     }
 }

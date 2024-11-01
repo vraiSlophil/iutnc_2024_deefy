@@ -11,7 +11,6 @@ use iutnc\deefy\render\AudioListRenderer;
 
 class AddPodcastTrackAction extends Action
 {
-
     private ?Playlist $playlist = null;
 
     /**
@@ -28,28 +27,31 @@ class AddPodcastTrackAction extends Action
                 throw new InvalidAudioValueException('name', $name);
             }
 
-            if (!isset($_SESSION['playlists'])) {
-                throw new DataInsertException('No playlists found');
+            if (!isset($_SESSION['user'])) {
+                throw new DataInsertException('No user found');
             }
 
-            foreach ($_SESSION['playlists'] as $playlist) {
-                $playlist = unserialize($playlist);
-                if ($playlist->__get('nom') === $name) {
+            $user = unserialize($_SESSION['user']);
+            $playlists = $user->getPlaylists();
+
+            foreach ($playlists as $playlist) {
+                if ($playlist->getName() === $name) {
+                    $_SESSION['current_playlist'] = serialize($playlist);
                     $this->playlist = $playlist;
-//                    echo $playlist->nom;
                     break;
                 }
             }
-            if ($this->playlist === null) {
+
+            if (!isset($_SESSION['current_playlist'])) {
                 throw new DataInsertException('Playlist not found');
             }
+
             return $this->renderForm();
         } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-
             $this->handleFormSubmission();
-            return '<div class="success">Track added successfully !</div>';
+            return '<div class="success">Track added successfully!</div>';
         }
+
         return '';
     }
 
@@ -63,10 +65,9 @@ class AddPodcastTrackAction extends Action
         <div class="inputs">
             <div class="input-parent">
                 <label for="track">Track Name</label>
-                <input type="text" id="track" name="track" placeholder="Track Name">
+                <input type="text" id="name" name="name" placeholder="Track Name">
             </div>
             <div class="input-parent">
-
                 <label for="artiste">Artiste</label>
                 <input type="text" id="artiste" name="artiste" placeholder="artiste">
             </div>
@@ -92,33 +93,58 @@ class AddPodcastTrackAction extends Action
     ';
     }
 
-    /**
-     * @throws InvalidAudioValueException
-     * @throws InvalidPropertyValueException|DataInsertException
-     */
     private function handleFormSubmission(): void
-    {
-        $playlistName = filter_input(INPUT_POST, 'playlist', FILTER_SANITIZE_SPECIAL_CHARS);
-        $trackName = filter_input(INPUT_POST, 'track', FILTER_SANITIZE_SPECIAL_CHARS);
-
-        if (!$playlistName || !$trackName) {
-            throw new InvalidAudioValueException('playlist or track name', $playlistName . ' or ' . $trackName);
-        }
-
-        if (!isset($_SESSION['playlists'])) {
-            throw new DataInsertException('No playlists found');
-        }
-
-        foreach ($_SESSION['playlists'] as &$serializedPlaylist) {
-            $playlist = unserialize($serializedPlaylist);
-            if ($playlist->__get('nom') === $playlistName) {
-                $track = new AudioTrack($trackName);
-                $playlist->addTrack($track);
-                $serializedPlaylist = serialize($playlist);
-                return;
-            }
-        }
-
-        throw new DataInsertException('Playlist not found');
+{
+    if (!isset($_SESSION['current_playlist'])) {
+        throw new DataInsertException('No playlist found in session');
     }
+
+    $playlist = unserialize($_SESSION['current_playlist']);
+    $trackName = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_SPECIAL_CHARS);
+    $artist = filter_input(INPUT_POST, 'artiste', FILTER_SANITIZE_SPECIAL_CHARS);
+    $genre = filter_input(INPUT_POST, 'genre', FILTER_SANITIZE_SPECIAL_CHARS);
+    $duration = filter_input(INPUT_POST, 'duree', FILTER_VALIDATE_INT);
+    $date = filter_input(INPUT_POST, 'date', FILTER_SANITIZE_SPECIAL_CHARS);
+    $file = $_FILES['file'];
+
+    if (!$trackName || !$artist || !$genre || !$duration || !$date || !$file) {
+        throw new InvalidAudioValueException('track details', 'One or more fields are missing or invalid');
+    }
+
+    if (!isset($_SESSION['user'])) {
+        throw new DataInsertException('No user found');
+    }
+
+    $user = unserialize($_SESSION['user']);
+    $playlists = $user->getPlaylists();
+
+    // Handle file upload
+    $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $newFileName = uniqid() . '.' . $fileExtension;
+    $uploadDir = realpath(__DIR__ . '/../../../public/tracks/');
+    if ($uploadDir === false) {
+        throw new DataInsertException('Upload directory does not exist');
+    }
+    $uploadFile = $uploadDir . DIRECTORY_SEPARATOR . $newFileName;
+
+    if (!move_uploaded_file($file['tmp_name'], $uploadFile)) {
+        throw new DataInsertException('Failed to upload file');
+    }
+
+    foreach ($playlists as $userPlaylist) {
+        if ($userPlaylist->getName() === $playlist->getName()) {
+            $track = new AudioTrack($trackName, $duration);
+            $track->setArtist($artist);
+            $track->setGenre($genre);
+            $track->setYear($date);
+            $track->setUrl($uploadFile); // Set the URL of the uploaded file
+            $userPlaylist->addTrack($track);
+            $_SESSION['user'] = serialize($user);
+            unset($_SESSION['current_playlist']);
+            return;
+        }
+    }
+
+    throw new DataInsertException('Playlist not found');
+}
 }

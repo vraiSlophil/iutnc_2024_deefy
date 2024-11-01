@@ -20,31 +20,25 @@ class AudioListRenderer implements Renderer
         return $this->renderWithoutButton(false);
     }
 
-    public function renderWithoutButton(bool $withoutBoutton = true): string
+    public function renderWithoutButton(bool $withoutButton = true): string
     {
-        $output = "<div class='tracklist'>
-        <h1>" . htmlspecialchars($this->audioList->__get('nom')) . "</h1>
-        <ul>";
+        $output = '<div class="tracklist">
+        <h1>' . htmlspecialchars($this->audioList->getName()) . '</h1>
+        <ul>';
+
         foreach ($this->audioList as $piste) {
-            $output .= "<li class='track court'>
-                            <h2>" . htmlspecialchars($piste->__get('titre')) . "</h2>
-                            <p>Durée : " . htmlspecialchars($piste->__get('duree')) . " secondes</p>
-                            <audio controls>
-                                <source src='//' type='audio/mpeg'>
-                                Votre navigateur ne supporte pas l'élément audio.
-                            </audio>
-                        </li>";
+            $trackRenderer = new TrackRenderer($piste);
+            $output .= '<li class="track court">' . $trackRenderer->render() . '</li>';
         }
+
         $output .= "</ul>
-            <p>Nombre de pistes : " . htmlspecialchars($this->audioList->__get('nombreDePistes')) . "</p>
-        <p>Durée totale : " . htmlspecialchars($this->audioList->__get('dureeTotale')) . " secondes</p>"
-        . ($withoutBoutton ? '' : "
-        <form method='get' action='' class='form-index'>
-            <input type='hidden' name='name' value='" . $this->audioList->__get('nom') . "'>
-            <button type='submit' name='action' value='add-track'>Add Podcast Track Action</button>
-        </form>
-        ") .
-    "</div>";
+            <p>Nombre de pistes : " . htmlspecialchars($this->audioList->getTrackNumber()) . "</p>
+            <p>Durée totale : " . htmlspecialchars($this->audioList->getTotalDuration()) . " secondes</p>" . ($withoutButton ? '' : "
+            <form method='get' action='' class='form-index'>
+                <input type='hidden' name='name' value='" . $this->audioList->getName() . "'>
+                <button type='submit' name='action' value='add-track'>Add Podcast Track Action</button>
+            </form>
+            ") . "</div>";
 
         return $output;
     }

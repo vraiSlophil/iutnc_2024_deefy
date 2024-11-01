@@ -3,17 +3,13 @@
 namespace iutnc\deefy\action;
 
 use iutnc\deefy\audio\lists\Playlist;
+use iutnc\deefy\exception\AuthException;
 use iutnc\deefy\exception\DataInsertException;
-use iutnc\deefy\exception\InvalidAudioValueException;
 use iutnc\deefy\exception\InvalidPropertyValueException;
 use iutnc\deefy\render\AudioListRenderer;
 
 class AddPlaylistAction extends Action
 {
-    /**
-     * @throws InvalidAudioValueException
-     * @throws DataInsertException
-     */
     public function execute(): string
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -40,34 +36,34 @@ class AddPlaylistAction extends Action
     }
 
     /**
-     * @throws InvalidAudioValueException
      * @throws DataInsertException
+     * @throws InvalidPropertyValueException
+     * @throws AuthException
      */
     private function handleFormSubmission(): Playlist
     {
         $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_SPECIAL_CHARS);
         if (!$name) {
-            throw new InvalidAudioValueException('name', $name);
+            throw new InvalidPropertyValueException('name', $name);
         }
 
-        if (!isset($_SESSION['playlists'])) {
-            $_SESSION['playlists'] = [];
+        if (!isset($_SESSION['user'])) {
+            throw new AuthException('User must be logged in');
         }
 
-        if (isset($_SESSION['playlists'])) {
-            foreach ($_SESSION['playlists'] as $playlist) {
-                $playlist = unserialize($playlist);
-                if ($playlist->__get('nom') === $name) {
-                    throw new DataInsertException('Playlist already exists');
-                }
+        $user = unserialize($_SESSION['user']);
+
+        foreach ($user->getPlaylists() as $playlist) {
+            if ($playlist->getName() === $name) {
+                throw new DataInsertException('Playlist already exists');
             }
         }
 
         $playlist = new Playlist($name);
+        $user->addPlaylist($playlist);
 
-        $_SESSION['playlists'][] = serialize($playlist);
+        $_SESSION['user'] = serialize($user);
 
         return $playlist;
-
     }
 }

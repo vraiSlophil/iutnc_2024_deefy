@@ -5,6 +5,7 @@ namespace iutnc\deefy\auth;
 use Exception;
 use iutnc\deefy\database\DeefyRepository;
 use iutnc\deefy\exception\AuthException;
+use iutnc\deefy\models\Permission;
 use iutnc\deefy\models\User;
 
 class Authn
@@ -35,7 +36,16 @@ class Authn
 
             // étape 2: Récupérer les données de l'utilisateur
             $user_data = $this->deefyRepository->getUserById($user_id);
-            $user = new User($user_data['user_id'], $user_data['user_name'], $user_data['user_email'], $user_data['permission_id']);
+            $user = new User(
+                $user_data['user_id'],
+                $user_data['user_name'],
+                $user_data['user_email'],
+                new Permission(
+                    $user_data['permission_id'],
+                    $user_data['role_name'],
+                    $user_data['role_level']
+                )
+            );
 
             // étape 3: Enregistrer l'utilisateur dans la session
             $_SESSION['user'] = serialize($user);
@@ -56,48 +66,35 @@ class Authn
     /**
      * @throws AuthException
      */
-    public function loginUser(string $email = null, string $password = null): bool
+    public function loginUser(string $email, string $password): bool
     {
         try {
-            // étape 1: Vérifier si un jeton de connexion est présent et valide
-            if (isset($_COOKIE['auth_token'])) {
-                $token = $_COOKIE['auth_token'];
-                $user_id = $this->deefyRepository->validateToken($token);
-                if ($user_id) {
-                    // étape 2: Récupérer les données de l'utilisateur
-                    $user_data = $this->deefyRepository->getUserById($user_id);
-                    $user = new User($user_data['user_id'], $user_data['user_name'], $user_data['user_email'], $user_data['permission_id']);
+            if ($this->deefyRepository->loginUser($email, $password)) {
+                // étape 5: Récupérer les données de l'utilisateur
+                $user_data = $this->deefyRepository->getUserByEmail($email);
+                $user = new User(
+                    $user_data['user_id'],
+                    $user_data['user_name'],
+                    $user_data['user_email'],
+                    new Permission(
+                        $user_data['permission_id'],
+                        $user_data['role_name'],
+                        $user_data['role_level']
+                    )
+                );
 
-                    // étape 3: Enregistrer l'utilisateur dans la session
-                    $_SESSION['user'] = serialize($user);
-                    $_SESSION['token'] = $token;
-                    return true;
-                }
+                // étape 2: Enregistrer l'utilisateur dans la session
+                $_SESSION['user'] = serialize($user);
+
+                // étape 3: Générer un nouveau jeton d'authentification
+                $token = $this->deefyRepository->generateToken($user_data['user_id']);
+                $_SESSION['token'] = $token;
+                setcookie('auth_token', $token, time() + (1000*60*60), "/"); // Cookie valide pour 1 heure
+
+                return true;
             }
+                throw new AuthException('Identifiants incorrects.');
 
-            // étape 4: Vérifier les identifiants de l'utilisateur
-            if (isset($email) && isset($password)) {
-                echo "email: $email, password: $password";
-                if ($this->deefyRepository->loginUser($email, $password)) {
-                    // étape 5: Récupérer les données de l'utilisateur
-                    $user_data = $this->deefyRepository->getUserByEmail($email);
-                    $user = new User($user_data['user_id'], $user_data['user_name'], $user_data['user_email'], $user_data['permission_id']);
-
-                    // étape 6: Enregistrer l'utilisateur dans la session
-                    $_SESSION['user'] = serialize($user);
-
-                    // étape 7: Générer un nouveau jeton d'authentification
-                    $token = $this->deefyRepository->generateToken($user_data['user_id']);
-                    $_SESSION['token'] = $token;
-                    setcookie('auth_token', $token, time() + (1000*60*60), "/"); // Cookie valide pour 1 heure
-
-                    return true;
-                } else {
-                    throw new AuthException('Identifiants incorrects.');
-                }
-            }
-
-            throw new AuthException('Aucun jeton valide ou identifiants fournis.');
         } catch (Exception $e) {
             throw new AuthException('Erreur lors de la connexion de l\'utilisateur: ' . $e->getMessage());
         }

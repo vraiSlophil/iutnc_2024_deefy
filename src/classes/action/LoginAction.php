@@ -12,21 +12,6 @@ class LoginAction extends Action
      */
     public function execute(): string
     {
-        $authn = new Authn();
-
-        // Check if the auth cookie exists and try to log in the user
-        if (isset($_COOKIE['auth_token'])) {
-            try {
-                if ($authn->loginUser()) {
-                    // Redirection vers l'action par défaut
-                    header('Location: ?action=default');
-                    exit();
-                }
-            } catch (AuthException $e) {
-//                Tant pis, la connexion par token n'a pas fonctionné
-            }
-        }
-
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             return $this->renderForm();
         } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
