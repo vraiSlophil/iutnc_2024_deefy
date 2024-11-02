@@ -2,19 +2,15 @@
 
 namespace iutnc\deefy\action;
 
+use iutnc\deefy\auth\Authn;
+
 class LogoutAction extends Action
 {
     public function execute(): string
     {
-        // Détruire la session
-        session_start();
-        session_unset();
-        session_destroy();
+        $authn = new Authn();
 
-        // Supprimer le cookie d'authentification
-        if (isset($_COOKIE['auth_token'])) {
-            setcookie('auth_token', '', time() - 3600, '/');
-        }
+        $authn->logoutUser();
 
         // Redirection vers l'action par défaut
         header('Location: ?action=default');

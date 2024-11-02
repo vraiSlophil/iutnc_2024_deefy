@@ -6,12 +6,15 @@ use iutnc\deefy\exception\InvalidPropertyValueException;
 
 class AudioTrack {
     private string $title;
-    private string $artitst;
+    private string $artist;
     private string $year;
     private string $genre;
     private int $duration;
     private string $url;
 
+    /**
+     * @throws InvalidPropertyValueException
+     */
     public function __construct(string $title, int $duration) {
         if ($duration < 0) {
             throw new InvalidPropertyValueException('duration', $duration);
@@ -77,5 +80,10 @@ class AudioTrack {
     public function setGenre(string $genre): void
     {
         $this->genre = $genre;
+    }
+
+    public function setUrl(string $uploadFile): void
+    {
+        $this->url = $uploadFile;
     }
 }

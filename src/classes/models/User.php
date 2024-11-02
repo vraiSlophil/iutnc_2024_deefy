@@ -2,7 +2,11 @@
 
 namespace iutnc\deefy\models;
 
+use Exception;
 use iutnc\deefy\audio\lists\Playlist;
+use iutnc\deefy\audio\tracks\AudioTrack;
+use iutnc\deefy\database\DeefyRepository;
+use iutnc\deefy\exception\InvalidPropertyValueException;
 
 class User
 {
@@ -12,18 +16,82 @@ class User
     private Permission $permission;
     private array $playlists;
 
-    public function __construct(int $user_id, string $user_name, string $user_email, Permission $permission)
+    /**
+     * @throws InvalidPropertyValueException
+     */
+    public function __construct(string $user_email)
     {
-        $this->user_id = $user_id;
-        $this->user_name = $user_name;
+        $user = DeefyRepository::getInstance()->getUserByEmail($user_email);
+
+        $this->user_id = $user['user_id'];
+        $this->user_name = $user['user_name'];
         $this->user_email = $user_email;
-        $this->permission = $permission;
-        $this->playlists = [];
+        $this->permission = new Permission($user['permission_id'], $user['role_name'], $user['role_level']);
+        $this->playlists = $this->initializePlaylists();
     }
 
-    public function addPlaylist(Playlist $playlist): void
+    /**
+     * @throws InvalidPropertyValueException
+     */
+    private function initializePlaylists(): array
+    {
+        $playlists = [];
+        $repository = DeefyRepository::getInstance();
+        $userPlaylists = $repository->getUserPlaylists($this->user_id);
+
+        foreach ($userPlaylists as $playlistData) {
+            $playlist = new Playlist($playlistData['playlist_name'], $playlistData['playlist_id']);
+
+            print_r($playlistData);
+
+            echo "<br>";
+            echo "<br>";
+
+            print_r($playlist);
+            echo "<br>";
+            echo "<br>";
+
+            $tracks = $repository->getPlaylistTracks($playlistData['playlist_id']);
+            $audioTracks = [];
+
+            foreach ($tracks as $trackData) {
+                $track = new AudioTrack($trackData['track_title'], $trackData['track_duration']);
+                $track->setArtist($trackData['track_artist']);
+                $track->setYear($trackData['track_year']);
+                $track->setGenre($trackData['track_genre']);
+                $track->setUrl($trackData['track_filename']);
+                $audioTracks[] = $track;
+            }
+
+            $playlist->addTrackArray($audioTracks);
+            $playlists[] = $playlist;
+        }
+
+        return $playlists;
+    }
+
+    public function addPlaylist(Playlist $playlist, bool $insertIntoDatabase = true): void
     {
         $this->playlists[] = $playlist;
+        if ($insertIntoDatabase) {
+            $repository = DeefyRepository::getInstance();
+            $repository->addPlaylistToUser($this->user_id, $playlist);
+        }
+    }
+
+    public function addTrackToPlaylist(string $playlistName, AudioTrack $track, bool $insertIntoDatabase = true): void
+    {
+        foreach ($this->playlists as $playlist) {
+            if ($playlist->getName() === $playlistName) {
+                $playlist->addTrack($track);
+                if ($insertIntoDatabase) {
+                    $repository = DeefyRepository::getInstance();
+                    $repository->addTrackToPlaylist($playlist, $track);
+                }
+                return;
+            }
+        }
+        throw new Exception("Playlist not found");
     }
 
     public function getPlaylists(): array

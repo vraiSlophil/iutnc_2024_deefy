@@ -53,7 +53,8 @@ class LoginAction extends Action
 
         $authn = new Authn();
         if ($authn->loginUser($user_email, $user_password)) {
-            // Redirection vers l'action par défaut
+
+//            return 'Vous êtes connecté.';
             header('Location: ?action=default');
             exit();
         } else {

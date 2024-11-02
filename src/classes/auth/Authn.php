@@ -24,34 +24,19 @@ class Authn
     {
         try {
             // étape 1: Enregistrer l'utilisateur
-            $user_id = $this->deefyRepository->registerUser($name, $email, $hashed_password);
+            $query = $this->deefyRepository->registerUser($name, $email, $hashed_password);
 
-            if ($_SESSION['debug']) {
-                echo "<pre>" . print_r($user_id, true) . "</pre>";
-            }
-
-            if (!$user_id) {
+            if (!$query) {
                 throw new AuthException('Erreur lors de l\'enregistrement de l\'utilisateur.');
             }
 
-            // étape 2: Récupérer les données de l'utilisateur
-            $user_data = $this->deefyRepository->getUserById($user_id);
-            $user = new User(
-                $user_data['user_id'],
-                $user_data['user_name'],
-                $user_data['user_email'],
-                new Permission(
-                    $user_data['permission_id'],
-                    $user_data['role_name'],
-                    $user_data['role_level']
-                )
-            );
+            $user = new User($email);
 
             // étape 3: Enregistrer l'utilisateur dans la session
             $_SESSION['user'] = serialize($user);
 
             // étape 4: Générer un jeton d'authentification
-            $token = $this->deefyRepository->generateToken($user_id);
+            $token = $this->deefyRepository->generateToken($user->getUserId());
             $_SESSION['token'] = $token;
 
             // étape 5: Créer un cookie d'authentification
@@ -59,7 +44,7 @@ class Authn
 
             return true;
         } catch (Exception $e) {
-            throw new AuthException('Erreur lors de l\'enregistrement de l\'utilisateur: ' . $e->getMessage());
+            throw new AuthException('Erreur lors de l\'enregistrement de l\'utilisateur : ' . $e->getMessage());
         }
     }
 
@@ -70,24 +55,13 @@ class Authn
     {
         try {
             if ($this->deefyRepository->loginUser($email, $password)) {
-                // étape 5: Récupérer les données de l'utilisateur
-                $user_data = $this->deefyRepository->getUserByEmail($email);
-                $user = new User(
-                    $user_data['user_id'],
-                    $user_data['user_name'],
-                    $user_data['user_email'],
-                    new Permission(
-                        $user_data['permission_id'],
-                        $user_data['role_name'],
-                        $user_data['role_level']
-                    )
-                );
+                $user = new User($email);
 
                 // étape 2: Enregistrer l'utilisateur dans la session
                 $_SESSION['user'] = serialize($user);
 
                 // étape 3: Générer un nouveau jeton d'authentification
-                $token = $this->deefyRepository->generateToken($user_data['user_id']);
+                $token = $this->deefyRepository->generateToken($user->getUserId());
                 $_SESSION['token'] = $token;
                 setcookie('auth_token', $token, time() + (1000*60*60), "/"); // Cookie valide pour 1 heure
 
@@ -98,5 +72,26 @@ class Authn
         } catch (Exception $e) {
             throw new AuthException('Erreur lors de la connexion de l\'utilisateur: ' . $e->getMessage());
         }
+    }
+
+    public function logoutUser(): void
+    {
+        // Supprimer le cookie d'authentification
+        if (isset($_COOKIE['auth_token'])) {
+            setcookie('auth_token', '', time() - 3600, '/');
+        }
+
+
+        $user = unserialize($_SESSION['user']);
+
+        // Supprimer le jeton d'authentification de la base de données
+        if (isset($_SESSION['token'])) {
+            $this->deefyRepository->deleteTokens($user->getUserId(), false);
+        }
+
+        // Détruire la session
+        session_start();
+        session_unset();
+        session_destroy();
     }
 }

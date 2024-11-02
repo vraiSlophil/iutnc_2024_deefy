@@ -18,8 +18,7 @@ class TrackRenderer implements Renderer
         return '<div class="track">
                     <h2>' . htmlspecialchars($this->track->getTitle()) . '</h2>
                     <p>Durée : ' . htmlspecialchars($this->track->getDuration()) . ' secondes</p>
-                    <audio controls>
-                        <source src="' . htmlspecialchars($this->track->getUrl()) . '" type="audio/mpeg">
+                    <audio controls src="../' . htmlspecialchars($this->track->getUrl()) . '" type="audio/mpeg">
                         Votre navigateur ne supporte pas l\'élément audio.
                     </audio>
                 </div>';

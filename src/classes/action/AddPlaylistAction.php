@@ -10,6 +10,11 @@ use iutnc\deefy\render\AudioListRenderer;
 
 class AddPlaylistAction extends Action
 {
+    /**
+     * @throws AuthException
+     * @throws InvalidPropertyValueException
+     * @throws DataInsertException
+     */
     public function execute(): string
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -39,10 +44,19 @@ class AddPlaylistAction extends Action
      * @throws DataInsertException
      * @throws InvalidPropertyValueException
      * @throws AuthException
+     * @throws \Exception
      */
     private function handleFormSubmission(): Playlist
     {
         $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_SPECIAL_CHARS);
+
+//        name doit être une chaine avec que des lettres minuscules et/ou majuscules
+
+
+        if (!preg_match('/^[a-zA-Z]+$/', $name)) {
+            throw new \Exception('Le nom de la playlist ne doit contenir que des lettres');
+        }
+
         if (!$name) {
             throw new InvalidPropertyValueException('name', $name);
         }

@@ -28,7 +28,7 @@ class AudioListRenderer implements Renderer
 
         foreach ($this->audioList as $piste) {
             $trackRenderer = new TrackRenderer($piste);
-            $output .= '<li class="track court">' . $trackRenderer->render() . '</li>';
+            $output .= '<li>' . $trackRenderer->render() . '</li>';
         }
 
         $output .= "</ul>

@@ -48,6 +48,13 @@ textarea {
     outline: unset;
 }
 
+audio {
+    border-radius: 1.5em;
+    overflow: hidden;
+    background-color: #000000;
+    accent-color: #70df70;
+}
+
 /* error style */
 /* Style de base pour la div.error */
 div.error {
