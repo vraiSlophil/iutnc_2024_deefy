@@ -128,7 +128,7 @@ class AddPodcastTrackAction extends Action
         $projectPath = realpath($_ENV['PROJECT_SOURCE_PATH']);
         $uploadDir = $projectPath . DIRECTORY_SEPARATOR . 'public/tracks';
 
-        if ($uploadDir === false || !is_dir($uploadDir)) {
+        if (!$uploadDir || !is_dir($uploadDir)) {
             throw new DataInsertException('Upload directory does not exist or is invalid');
         }
 

@@ -41,16 +41,6 @@ class User
 
         foreach ($userPlaylists as $playlistData) {
             $playlist = new Playlist($playlistData['playlist_name'], $playlistData['playlist_id']);
-
-            print_r($playlistData);
-
-            echo "<br>";
-            echo "<br>";
-
-            print_r($playlist);
-            echo "<br>";
-            echo "<br>";
-
             $tracks = $repository->getPlaylistTracks($playlistData['playlist_id']);
             $audioTracks = [];
 

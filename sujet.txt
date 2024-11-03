@@ -1,0 +1,33 @@
+IUT Nancy-Charlemagne BUT Informatique S3
+Ressource Développement Web S3
+Mini-Projet Deefy
+Ce document décrit le rendu attendu pour le mini-projet Deefy, constitué principalement des
+fonctionnalités développées dans le cadre des TD pour l’application Deefy.
+Rendu
+Le projet est à rendre par binôme sous la forme d’un lien vers un dépôt git, accompagné d’un
+tableau de bord listant les fonctionnalités réalisées, d’un script de création/remplissage de la base de
+données (si elle a été modifiée ou complétée), et d’éléments permettant le test de l’application
+(notamment email/password des utilisateurs créés).
+L’ensemble est à déposer sous la forme d’une archive zip dans les dépôts Arche prévus à cet effet.
+Date limite : mardi 5 novembre 2024.
+Fonctionnalités
+Les fonctionnalités suivantes seront accessibles dans le menu d’accueil de l’application :
+• mes playlists : affiche la liste des playlists de l’utilisateur authentifié ; chaque élément de la
+liste est cliquable et permet d’afficher une playlist qui devient la playlist courante ; stockée
+en session,
+• créer une playlist vide : un formulaire permettant de saisir le nom d’une nouvelle playlist est
+affiché. A la validation, la playlist est créée et stockée en BD ; elle devient la playlist
+courante.
+• Afficher la playlist courante : affiche la playlist stockée en session,
+• S’inscrire : création d’un compte utilisateur avec le rôle STANDARD
+• s’authentifier : fournir ses credentials pour s’authentifier en tant qu’utilisateur enregistré.
+L’affichage d’une playlist propose toujours d’ajouter une nouvelle piste à la playlist. Le formulaire
+de saisie des données de description d’une piste est affiché. A la validation, la piste est créée et
+enregistrée dans la base puis ajoutée à la playlist affichée.
+Compléments
+• l’affichage d’une playlist et l’ajout d’une piste à une playlist est réservé au propriétaire de la
+playlist ou au rôle ADMIN,
+• il est nécessaire de veiller scrupuleusement à la sécurité : stockage adéquat des mot de passe,
+parades contre l’injection XSS et SQL,
+• le code HTML généré doit être valide,
+• l’utilisation d’un framework css pour la mise en page est autorisée.

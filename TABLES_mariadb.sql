@@ -80,3 +80,13 @@ ALTER TABLE playlist_tracks
 
 ALTER TABLE tokens
     ADD FOREIGN KEY (user_id) REFERENCES users (user_id);
+
+INSERT INTO permissions (role_name, role_level)
+VALUES ('USER', 0);
+INSERT INTO permissions (role_name, role_level)
+VALUES ('MOD', 10);
+INSERT INTO permissions (role_name, role_level)
+VALUES ('ADMIN', 100);
+
+insert into deefy.users (user_id, user_name, user_email, user_password, permission_id)
+values  (2, 'ADMINISTRATEUR', 'ADMINISTRATEUR@example.com', '$2y$10$KEtiW6iIEIzs0ogCBuQX/eJTpLluCrpBPlWumszFTWDfG1IqbRoSC', 3);
