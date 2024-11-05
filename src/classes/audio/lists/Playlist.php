@@ -68,4 +68,9 @@ class Playlist extends AudioList
 
         return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
     }
+
+    public function setId(int $playlist_id): void
+    {
+        $this->id = $playlist_id;
+    }
 }

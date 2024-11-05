@@ -1,8 +1,8 @@
-DROP DATABASE IF EXISTS deefy;
-
-CREATE DATABASE IF NOT EXISTS deefy CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-
-USE deefy;
+# DROP DATABASE IF EXISTS deefy;
+#
+# CREATE DATABASE IF NOT EXISTS deefy CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+#
+# USE deefy;
 
 CREATE TABLE users
 (
@@ -88,5 +88,5 @@ VALUES ('MOD', 10);
 INSERT INTO permissions (role_name, role_level)
 VALUES ('ADMIN', 100);
 
-insert into deefy.users (user_id, user_name, user_email, user_password, permission_id)
+insert into users (user_id, user_name, user_email, user_password, permission_id)
 values  (2, 'ADMINISTRATEUR', 'ADMINISTRATEUR@example.com', '$2y$10$KEtiW6iIEIzs0ogCBuQX/eJTpLluCrpBPlWumszFTWDfG1IqbRoSC', 3);

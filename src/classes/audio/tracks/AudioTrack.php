@@ -52,16 +52,6 @@ class AudioTrack {
         $this->artist = $artist;
     }
 
-    public function getArtitst(): string
-    {
-        return $this->artitst;
-    }
-
-    public function setArtitst(string $artitst): void
-    {
-        $this->artitst = $artitst;
-    }
-
     public function getYear(): string
     {
         return $this->year;

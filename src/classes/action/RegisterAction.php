@@ -76,7 +76,7 @@ class RegisterAction extends Action
             throw new AuthException('Les mots de passe ne correspondent pas');
         }
 
-        $regex = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-__+.\/'\",]).{8,}$/";
+        $regex = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_+.\/'\",]).{8,}$/";
 
         if (!preg_match($regex, $user_password)) {
             throw new AuthException('Le mot de passe doit contenir au moins 8 caractères dont : 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial');

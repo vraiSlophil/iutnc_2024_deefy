@@ -69,6 +69,9 @@ class User
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function addTrackToPlaylist(string $playlistName, AudioTrack $track, bool $insertIntoDatabase = true): void
     {
         foreach ($this->playlists as $playlist) {

@@ -2,7 +2,6 @@
 
 namespace iutnc\deefy\database;
 
-use DateMalformedStringException;
 use DateTime;
 use DateTimeZone;
 use Exception;
@@ -10,7 +9,6 @@ use iutnc\deefy\audio\lists\Playlist;
 use iutnc\deefy\audio\tracks\AudioTrack;
 use PDO;
 use PDOException;
-use Random\RandomException;
 
 class DeefyRepository
 {
@@ -73,10 +71,7 @@ class DeefyRepository
         return false;
     }
 
-    /**
-     * @throws DateMalformedStringException
-     * @throws RandomException
-     */
+
     public function generateToken(int $user_id): string
     {
         // Supprimer les tokens expirés pour cet utilisateur
@@ -119,7 +114,7 @@ class DeefyRepository
 
     public function getUserById(int $user_id): array
     {
-        $query = "SELECT * FROM users JOIN deefy.permissions p on p.permission_id = users.permission_id WHERE user_id = :user_id";
+        $query = "SELECT * FROM users JOIN permissions p on p.permission_id = users.permission_id WHERE user_id = :user_id";
         $stmt = self::$database->prepare($query);
         $stmt->bindParam(':user_id', $user_id);
         $stmt->execute();
@@ -137,7 +132,7 @@ class DeefyRepository
 
     public function getUserByEmail(string $email): array
     {
-        $query = "SELECT * FROM users JOIN deefy.permissions p on p.permission_id = users.permission_id WHERE user_email = :email";
+        $query = "SELECT * FROM users JOIN permissions p on p.permission_id = users.permission_id WHERE user_email = :email";
         $stmt = self::$database->prepare($query);
         $stmt->bindParam(':email', $email);
         $stmt->execute();
@@ -147,7 +142,7 @@ class DeefyRepository
 
     public function getUserList(): array
     {
-        $query = "SELECT * FROM users JOIN deefy.permissions p on p.permission_id = users.permission_id";
+        $query = "SELECT * FROM users JOIN permissions p on p.permission_id = users.permission_id";
         $stmt = self::$database->prepare($query);
         $stmt->execute();
 
@@ -192,6 +187,8 @@ class DeefyRepository
         $stmt->bindParam(':name', $playlist_name, PDO::PARAM_STR);
         $stmt->execute();
         $playlist_id = self::$database->lastInsertId();
+
+        $playlist->setId($playlist_id);
 
         $query = "INSERT INTO user_playlists (user_id, playlist_id) VALUES (:user_id, :playlist_id)";
         $stmt = self::$database->prepare($query);

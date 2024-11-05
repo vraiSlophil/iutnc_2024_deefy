@@ -41,7 +41,11 @@ if (isset($_SESSION['user'])) {
         <button type="submit" name="action" value="default">Default Action</button>
         <button type="submit" name="action" value="playlist">Display Playlist Action</button>
         <button type="submit" name="action" value="add-playlist">Add Playlist Action</button>
-        <!--        <button type="submit" name="action" value="add-track">Add Podcast Track Action</button>-->
+        <?php
+        if ($user !== null && $user->hasAccess(100)) {
+            echo '<button type="submit" name="action" value="admin">Admin Panel</button>';
+        }
+        ?>
     </form>
     <form method="get" action="">
 
