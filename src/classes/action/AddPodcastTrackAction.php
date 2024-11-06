@@ -3,6 +3,9 @@ namespace iutnc\deefy\action;
 
 use iutnc\deefy\audio\lists\Playlist;
 use iutnc\deefy\audio\tracks\AudioTrack;
+use iutnc\deefy\auth\Authn;
+use iutnc\deefy\auth\Authz;
+use iutnc\deefy\exception\AuthException;
 use iutnc\deefy\exception\DataInsertException;
 use iutnc\deefy\exception\InvalidAudioValueException;
 use iutnc\deefy\exception\InvalidPropertyValueException;
@@ -16,25 +19,30 @@ class AddPodcastTrackAction extends Action
      * @throws InvalidAudioValueException
      * @throws DataInsertException
      * @throws InvalidPropertyValueException
+     * @throws AuthException
      */
     public function execute(): string
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            $name = $_GET['name'];
+            $id = $_GET['id'] ?? null;
 
-            if (!$name) {
-                throw new InvalidAudioValueException('name', $name);
+            if ($id == null) {
+                throw new InvalidAudioValueException('id', $id);
             }
 
-            if (!isset($_SESSION['user'])) {
-                throw new DataInsertException('No user found');
+            $user = Authn::getAuthenticatedUser();
+            if (!$user) {
+                throw new AuthException('Vous devez être connecté pour accéder à cette fonctionnalité');
             }
 
-            $user = unserialize($_SESSION['user']);
+            if (!Authz::isOwnerOfPlaylist($user->getUserId(), $id)) {
+                throw new AuthException('Vous n\'êtes pas autorisé à accéder à cette fonctionnalité');
+            }
+
             $playlists = $user->getPlaylists();
 
             foreach ($playlists as $playlist) {
-                if ($playlist->getName() === $name) {
+                if ($playlist->getId() == $id) {
                     $_SESSION['current_playlist'] = serialize($playlist);
                     $this->playlist = $playlist;
                     break;

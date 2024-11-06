@@ -21,8 +21,8 @@ class AddPlaylistAction extends Action
             return $this->renderForm();
         } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $playlist = $this->handleFormSubmission();
-            $audioListRenderer = new AudioListRenderer($playlist);
-            return $audioListRenderer->render();
+            header('Location: ?action=playlist');
+            exit();
         }
         return '';
     }

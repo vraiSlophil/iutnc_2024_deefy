@@ -2,15 +2,15 @@
 
 namespace iutnc\deefy\render;
 
-use iutnc\deefy\audio\lists\AudioList;
+use iutnc\deefy\audio\lists\Playlist;
 
-class AudioListRenderer implements Renderer
+class PlaylistRenderer implements Renderer
 {
-    private AudioList $audioList;
+    private Playlist $playlist;
 
-    public function __construct(AudioList $audioList)
+    public function __construct(Playlist $playlist)
     {
-        $this->audioList = $audioList;
+        $this->playlist = $playlist;
     }
 
     public function render(): string
@@ -21,19 +21,19 @@ class AudioListRenderer implements Renderer
     public function renderWithoutButton(bool $withoutButton = true): string
     {
         $output = '<div class="tracklist">
-        <h1>' . htmlspecialchars($this->audioList->getName()) . '</h1>
+        <h1>' . htmlspecialchars($this->playlist->getName()) . '</h1>
         <ul>';
 
-        foreach ($this->audioList as $piste) {
+        foreach ($this->playlist as $piste) {
             $trackRenderer = new TrackRenderer($piste);
             $output .= '<li>' . $trackRenderer->render() . '</li>';
         }
 
         $output .= "</ul>
-            <p>Nombre de pistes : " . htmlspecialchars($this->audioList->getTrackNumber()) . "</p>
-            <p>Durée totale : " . htmlspecialchars($this->audioList->getTotalDuration()) . " secondes</p>" . ($withoutButton ? '' : "
+            <p>Nombre de pistes : " . htmlspecialchars($this->playlist->getTrackNumber()) . "</p>
+            <p>Durée totale : " . htmlspecialchars($this->playlist->getTotalDuration()) . " secondes</p>" . ($withoutButton ? '' : "
             <form method='get' action='' class='form-index'>
-                <input type='hidden' name='name' value='" . $this->audioList->getName() . "'>
+                <input type='hidden' name='id' value='" . $this->playlist->getId() . "'>
                 <button type='submit' name='action' value='add-track'>Add Podcast Track Action</button>
             </form>
             ") . "</div>";

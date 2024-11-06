@@ -17,6 +17,19 @@ class Authn
         $this->deefyRepository = DeefyRepository::getInstance();
     }
 
+    public static function isUserLoggedIn(): bool
+    {
+        return isset($_SESSION['user']);
+    }
+
+    public static function getAuthenticatedUser(): ?User
+    {
+        if (Authn::isUserLoggedIn()) {
+            return unserialize($_SESSION['user']);
+        }
+        return null;
+    }
+
     /**
      * @throws AuthException
      */
@@ -35,12 +48,12 @@ class Authn
             // étape 3: Enregistrer l'utilisateur dans la session
             $_SESSION['user'] = serialize($user);
 
-            // étape 4: Générer un jeton d'authentification
-            $token = $this->deefyRepository->generateToken($user->getUserId());
-            $_SESSION['token'] = $token;
-
-            // étape 5: Créer un cookie d'authentification
-            setcookie('auth_token', $token, time() + (1000*60*60), "/"); // Cookie valide pour 1 heure
+//            // étape 4: Générer un jeton d'authentification
+//            $token = $this->deefyRepository->generateToken($user->getUserId());
+//            $_SESSION['token'] = $token;
+//
+//            // étape 5: Créer un cookie d'authentification
+//            setcookie('auth_token', $token, time() + (1000*60*60), "/"); // Cookie valide pour 1 heure
 
             return true;
         } catch (Exception $e) {
@@ -60,10 +73,10 @@ class Authn
                 // étape 2: Enregistrer l'utilisateur dans la session
                 $_SESSION['user'] = serialize($user);
 
-                // étape 3: Générer un nouveau jeton d'authentification
-                $token = $this->deefyRepository->generateToken($user->getUserId());
-                $_SESSION['token'] = $token;
-                setcookie('auth_token', $token, time() + (1000*60*60), "/"); // Cookie valide pour 1 heure
+//                // étape 3: Générer un nouveau jeton d'authentification
+//                $token = $this->deefyRepository->generateToken($user->getUserId());
+//                $_SESSION['token'] = $token;
+//                setcookie('auth_token', $token, time() + (1000*60*60), "/"); // Cookie valide pour 1 heure
 
                 return true;
             }
@@ -76,18 +89,18 @@ class Authn
 
     public function logoutUser(): void
     {
-        // Supprimer le cookie d'authentification
-        if (isset($_COOKIE['auth_token'])) {
-            setcookie('auth_token', '', time() - 3600, '/');
-        }
+//        // Supprimer le cookie d'authentification
+//        if (isset($_COOKIE['auth_token'])) {
+//            setcookie('auth_token', '', time() - 3600, '/');
+//        }
+//
+//
+//        $user = unserialize($_SESSION['user']);
 
-
-        $user = unserialize($_SESSION['user']);
-
-        // Supprimer le jeton d'authentification de la base de données
-        if (isset($_SESSION['token'])) {
-            $this->deefyRepository->deleteTokens($user->getUserId(), false);
-        }
+//        // Supprimer le jeton d'authentification de la base de données
+//        if (isset($_SESSION['token'])) {
+//            $this->deefyRepository->deleteTokens($user->getUserId(), false);
+//        }
 
         // Détruire la session
         session_start();

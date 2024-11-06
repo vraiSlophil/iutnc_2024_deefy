@@ -25,7 +25,7 @@ class DeefyRepository
         try {
             self::$database = new PDO($_ENV['DB_CONNECTION'] . ":host=" . $_ENV['DB_HOST'] . ";dbname=" . $_ENV['DB_DATABASE'], $_ENV['DB_USERNAME'], $_ENV['DB_PASSWORD'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"]);
         } catch (PDOException $e) {
-            throw new Exception("Database connection failed: " . $e->getMessage());
+            throw new Exception("Echec de la connexion à la base de données: " . $e->getMessage());
         }
     }
 
@@ -72,45 +72,45 @@ class DeefyRepository
     }
 
 
-    public function generateToken(int $user_id): string
-    {
-        // Supprimer les tokens expirés pour cet utilisateur
-        $this->deleteTokens($user_id, false);
-
-        $token = bin2hex(random_bytes(32));
-        $date = new DateTime('now', new DateTimeZone('Europe/Paris'));
-        $expires_at = $date->modify('+1 hour')->format('Y-m-d H:i:s');
-
-        $query = "INSERT INTO tokens (user_id, token, expires_at) VALUES (:user_id, :token, :expires_at)";
-        $stmt = self::$database->prepare($query);
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->bindParam(':token', $token);
-        $stmt->bindParam(':expires_at', $expires_at);
-        $stmt->execute();
-
-        return $token;
-    }
-
-    public function deleteTokens(int $user_id, bool $onlyExpiredTokens = true): void
-    {
-        $query = "DELETE FROM tokens WHERE user_id = :user_id";
-        $query .= $onlyExpiredTokens ? " AND expires_at < NOW()" : "";
-        $stmt = self::$database->prepare($query);
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->execute();
-    }
-
-    public function validateToken(int $user_id, string $token): bool
-    {
-        $query = "SELECT COUNT(*) FROM tokens WHERE user_id = :user_id AND token = :token AND expires_at > NOW()";
-        $stmt = self::$database->prepare($query);
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->bindParam(':token', $token);
-        $stmt->execute();
-        $count = $stmt->fetchColumn();
-
-        return $count > 0;
-    }
+//    public function generateToken(int $user_id): string
+//    {
+//        // Supprimer les tokens expirés pour cet utilisateur
+//        $this->deleteTokens($user_id, false);
+//
+//        $token = bin2hex(random_bytes(32));
+//        $date = new DateTime('now', new DateTimeZone('Europe/Paris'));
+//        $expires_at = $date->modify('+1 hour')->format('Y-m-d H:i:s');
+//
+//        $query = "INSERT INTO tokens (user_id, token, expires_at) VALUES (:user_id, :token, :expires_at)";
+//        $stmt = self::$database->prepare($query);
+//        $stmt->bindParam(':user_id', $user_id);
+//        $stmt->bindParam(':token', $token);
+//        $stmt->bindParam(':expires_at', $expires_at);
+//        $stmt->execute();
+//
+//        return $token;
+//    }
+//
+//    public function deleteTokens(int $user_id, bool $onlyExpiredTokens = true): void
+//    {
+//        $query = "DELETE FROM tokens WHERE user_id = :user_id";
+//        $query .= $onlyExpiredTokens ? " AND expires_at < NOW()" : "";
+//        $stmt = self::$database->prepare($query);
+//        $stmt->bindParam(':user_id', $user_id);
+//        $stmt->execute();
+//    }
+//
+//    public function validateToken(int $user_id, string $token): bool
+//    {
+//        $query = "SELECT COUNT(*) FROM tokens WHERE user_id = :user_id AND token = :token AND expires_at > NOW()";
+//        $stmt = self::$database->prepare($query);
+//        $stmt->bindParam(':user_id', $user_id);
+//        $stmt->bindParam(':token', $token);
+//        $stmt->execute();
+//        $count = $stmt->fetchColumn();
+//
+//        return $count > 0;
+//    }
 
     public function getUserById(int $user_id): array
     {
@@ -197,6 +197,9 @@ class DeefyRepository
         $stmt->execute();
     }
 
+    /**
+     * @throws Exception
+     */
     public function addTrackToPlaylist(Playlist $playlist, AudioTrack $track): void
     {
 
@@ -209,7 +212,7 @@ class DeefyRepository
         $playlistExists = $stmt->fetchColumn();
 
         if (!$playlistExists) {
-            throw new Exception("Playlist with ID $playlist_id does not exist.");
+            throw new Exception("La playlist avec l''id $playlist_id n'existe pas.");
         }
 
         // Insert the track into the podcast_tracks table
@@ -238,5 +241,15 @@ class DeefyRepository
         $stmt->bindParam(':playlist_id', $playlist_id);
         $stmt->bindParam(':track_id', $track_id);
         $stmt->execute();
+    }
+
+    public function isUserOwnerOfPlaylist(int $userId, int $playlistId): bool
+    {
+        $query = 'SELECT COUNT(*) FROM user_playlists WHERE user_id = :userId AND playlist_id = :playlistId';
+        $stmt = self::$database->prepare($query);
+        $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+        $stmt->bindParam(':playlistId', $playlistId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
     }
 }

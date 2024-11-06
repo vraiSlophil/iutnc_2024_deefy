@@ -2,6 +2,7 @@
 
 namespace iutnc\deefy\action;
 
+use iutnc\deefy\auth\Authn;
 use iutnc\deefy\database\DeefyRepository;
 
 class AdminAction extends Action
@@ -17,12 +18,12 @@ class AdminAction extends Action
 
     public function execute(): string
     {
-        $user = unserialize($_SESSION['user']);
+        $user = Authn::getAuthenticatedUser();
 
         if ($user->hasAccess(100)) {
             return $this->renderAdminPanel();
         } else {
-            return '<div>Access denied.</div>';
+            return '<div>Accès refuser.</div>';
         }
     }
 

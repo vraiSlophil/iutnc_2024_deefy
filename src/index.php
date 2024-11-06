@@ -1,4 +1,5 @@
 <?php
+session_set_cookie_params(3600);
 session_start();
 
 require_once '../vendor/autoload.php';
@@ -38,9 +39,9 @@ if (isset($_SESSION['user'])) {
         Iutnc - Deefy
     </h1>
     <form method="get" action="">
-        <button type="submit" name="action" value="default">Default Action</button>
-        <button type="submit" name="action" value="playlist">Display Playlist Action</button>
-        <button type="submit" name="action" value="add-playlist">Add Playlist Action</button>
+        <button type="submit" name="action" value="default">Accueil</button>
+        <button type="submit" name="action" value="playlist">Afficher mes playlists</button>
+        <button type="submit" name="action" value="add-playlist">Créer une nouvelle playlist</button>
         <?php
         if ($user !== null && $user->hasAccess(100)) {
             echo '<button type="submit" name="action" value="admin">Admin Panel</button>';

@@ -10,6 +10,7 @@ use iutnc\deefy\action\DisplayPlaylistAction;
 use iutnc\deefy\action\LoginAction;
 use iutnc\deefy\action\LogoutAction;
 use iutnc\deefy\action\RegisterAction;
+use iutnc\deefy\auth\Authn;
 use iutnc\deefy\auth\Authz;
 
 class Dispatcher {
@@ -22,7 +23,7 @@ class Dispatcher {
     public function run(): void {
 
         if (!in_array($this->action, ['login', 'register', 'default', 'logout'])) {
-            if (!Authz::validateToken()) {
+            if (!Authn::isUserLoggedIn()) {
                 $this->renderPage('<div class="error">Vous devez être connecté pour accéder à cette fonctionnalité</div>');
                 return;
             }
