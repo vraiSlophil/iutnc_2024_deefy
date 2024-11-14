@@ -22,7 +22,7 @@ class Authn
         return isset($_SESSION['user']);
     }
 
-    public static function getAuthenticatedUser(): ?User
+    public static function getAuthenticatedUser(): User|null
     {
         if (Authn::isUserLoggedIn()) {
             return unserialize($_SESSION['user']);

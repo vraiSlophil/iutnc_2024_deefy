@@ -13,15 +13,15 @@ if ($_SESSION['debug']) {
     error_reporting(E_ALL);
 }
 
+use iutnc\deefy\auth\Authn;
 use iutnc\deefy\dispatch\Dispatcher;
 
-$user = null;
-
-if (isset($_SESSION['user'])) {
-    try {
-        $user = unserialize($_SESSION['user']);
-    } catch (Exception $e) {}
-}
+$user = Authn::getAuthenticatedUser();
+//
+//if ($user == null) {
+//    header('Location: ?action=logout');
+//    exit();
+//}
 ?>
 <!doctype html>
 <html lang="fr">
